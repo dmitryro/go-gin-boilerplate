@@ -27,6 +27,7 @@ Boilerplate project using Go and Gin – a clean, simple, and lightweight starti
 - [🌐 Routes](#-routes)
 - [🧰 Services](#-services)
 - [📦 Models](#-models)
+  - [GORM and Database Modeling](#gorm-and-database-modeling)
 - [🏁 Main Entry](#-main-entry)
 - [📦 Go Modules](#-go-modules)
 - [✅ Unit Testing](#-unit-testing)
@@ -226,15 +227,81 @@ Create new services by following similar structure and injecting via handler con
 
 ## 📦 Models
 
-Located in `src/internal/models`. Represents DB schema and request/response types.
+### GORM and Database Modeling
 
-Includes:
-- `user.go`
-- `role.go`
-- `login.go`
-- `login_request.go`
-- `token_response.go`
-- `error_response.go`
+This project uses GORM for ORM support. Key model concepts:
+
+#### User Model
+
+```go
+type User struct {
+    ID        uint
+    First     string
+    Last      string
+    Email     string
+    Phone     string
+    Username  string
+    Password  string
+    RoleID    uint
+    Role      Role `gorm:"foreignKey:RoleID"`
+    CreatedAt time.Time
+    UpdatedAt time.Time
+}
+```
+
+- Password is hashed before creation using `BeforeCreate` GORM hook.
+- Relationship to `Role` is set up using `gorm:"foreignKey:RoleID"`.
+- Preloading is used (e.g., `db.Preload("Role").Find(&users)`) to automatically retrieve role data.
+
+#### Role Model
+
+```go
+type Role struct {
+    ID          uint
+    Name        string
+    Permissions pq.StringArray `gorm:"type:text[]"`
+    CreatedAt   time.Time
+}
+```
+
+- Uses `pq.StringArray` for PostgreSQL native array support.
+
+#### Login Model
+
+```go
+type Login struct {
+    ID        uint
+    Username  string
+    Password  string
+    LoginTime time.Time `gorm:"default:current_timestamp"`
+}
+```
+
+- Used for audit/login event recording.
+
+### GORM Best Practices
+
+- Use `gorm:"not null"` for required fields.
+- Use `gorm:"foreignKey:Field"` for relationships.
+- Always define `json:"..."` tags for Swagger compatibility.
+- Handle `AutoMigrate()` in `main.go` or migration tools.
+- Use transactions (`db.Transaction(func(tx *gorm.DB) error {...}`) for complex logic.
+
+### Updating Models
+
+- Update the model struct with new fields.
+- Run `AutoMigrate()` to apply schema changes (or manage with SQL migrations in `sql/`).
+- Always reflect changes in Swagger, handlers, and services.
+
+### Preloading in GORM
+
+To fetch associated data like roles for users:
+
+```go
+db.Preload("Role").Find(&users)
+```
+
+This helps avoid N+1 query problems and loads related rows in one SQL join.
 
 ---
 
