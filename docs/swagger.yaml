@@ -1,0 +1,596 @@
+basePath: /
+definitions:
+  go_api_internal_models.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  go_api_internal_models.LoginRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: admin
+        type: string
+    type: object
+  go_api_internal_models.Role:
+    properties:
+      created_at:
+        example: "2023-04-01T12:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: admin
+        type: string
+      permissions:
+        example:
+        - '["read"'
+        - '"write"'
+        - '"delete"]'
+        items:
+          type: string
+        type: array
+    type: object
+  go_api_internal_models.TokenResponse:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  go_api_internal_models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first:
+        type: string
+      id:
+        type: integer
+      last:
+        type: string
+      phone:
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/go_api_internal_models.Role'
+        description: Ensure this tag is correct
+      role_id:
+        type: integer
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  go_api_internal_models.UserCreateRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      first:
+        example: John
+        type: string
+      last:
+        example: Doe
+        type: string
+      password:
+        example: strongpassword123
+        type: string
+      phone:
+        example: "+1234567890"
+        type: string
+      role_id:
+        example: 1
+        type: integer
+      username:
+        example: johndoe
+        type: string
+    type: object
+  src_internal_handlers.ChangePasswordRequest:
+    properties:
+      newPassword:
+        type: string
+      oldPassword:
+        type: string
+    required:
+    - newPassword
+    - oldPassword
+    type: object
+host: localhost:8081
+info:
+  contact:
+    email: support@medrobotix.com
+    name: API Support
+  description: This is the API documentation for GO API.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: GO API
+  version: "1.0"
+paths:
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: Validates user credentials and returns a JWT token upon successful
+        authentication
+      parameters:
+      - description: User credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/go_api_internal_models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go_api_internal_models.TokenResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      summary: Authenticate user and return JWT token
+      tags:
+      - auth
+  /api/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with the provided details
+      parameters:
+      - description: User registration info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/go_api_internal_models.UserCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - auth
+  /api/roles:
+    get:
+      description: Get all roles
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/go_api_internal_models.Role'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all roles
+      tags:
+      - roles
+    post:
+      consumes:
+      - application/json
+      description: Create a new role with the provided details
+      parameters:
+      - description: Role information
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/go_api_internal_models.Role'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/go_api_internal_models.Role'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new role
+      tags:
+      - roles
+  /api/roles/{id}:
+    get:
+      description: Get a role by ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go_api_internal_models.Role'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a role by ID
+      tags:
+      - roles
+  /api/roles/name/{name}:
+    get:
+      description: Get a role by name
+      parameters:
+      - description: Role Name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go_api_internal_models.Role'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a role by name
+      tags:
+      - roles
+  /api/users:
+    get:
+      description: Get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/go_api_internal_models.User'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the provided details
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/go_api_internal_models.UserCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new user
+      tags:
+      - users
+  /api/users/{id}:
+    delete:
+      description: Delete a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a user
+      tags:
+      - users
+    get:
+      description: Get a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go_api_internal_models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a user by ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update an existing user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User object to be updated
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/go_api_internal_models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go_api_internal_models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update an existing user
+      tags:
+      - users
+  /api/users/email/{email}:
+    get:
+      description: Get a user by email
+      parameters:
+      - description: User Email
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go_api_internal_models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a user by email
+      tags:
+      - users
+  /api/users/password:
+    post:
+      consumes:
+      - application/json
+      description: Change the current user's password
+      parameters:
+      - description: Old and new passwords
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/src_internal_handlers.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Change user password
+      tags:
+      - users
+  /api/users/role/{role_id}:
+    get:
+      description: Get all users that have the specified role ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/go_api_internal_models.User'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get users by role ID
+      tags:
+      - users
+  /api/users/username/{username}:
+    get:
+      description: Get a user by username
+      parameters:
+      - description: User Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go_api_internal_models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go_api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a user by username
+      tags:
+      - users
+schemes:
+- http
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+  BearerAuth:
+    description: Enter the token with the 'Bearer ' prefix, e.g., 'Bearer eyJhbGci...'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

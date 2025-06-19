@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  go-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-api
+    ports:
+      - "${APP_PORT:-8081}:${APP_PORT:-8081}"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    volumes:
+      - ./docs:/app/docs
+    networks:
+      - goapi-net
+
+  postgres:
+    image: postgres:15
+    container_name: go-postgres
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${PG_DATABASE}
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    ports:
+      - "${PG_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - goapi-net
+
+volumes:
+  pgdata:
+
+networks:
+  goapi-net:
+    driver: bridge
