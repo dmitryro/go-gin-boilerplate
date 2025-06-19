@@ -278,3 +278,58 @@ Best practices:
 - Cover each handler and service
 - Mock DB where necessary
 
+## 🔐 Authentication and Bearer Token Usage
+
+This project uses JWT (JSON Web Tokens) for authentication. A `Bearer` token is required to access all protected endpoints.
+
+### 🔑 How to Authenticate
+
+1. **Login Endpoint**
+   - Use the `/api/login` endpoint with your username and password.
+   - On success, a JWT token will be returned.
+   - Example response:
+     ```json
+     {
+       "token": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+     }
+     ```
+
+2. **Register a New User**
+   - Use the `/api/register` endpoint to create a new user.
+   - Provide a valid role ID during registration (e.g., `1` for admin or `2` for guest).
+
+3. **Using the Bearer Token**
+   - When using **Swagger UI** at `http://localhost:8080/swagger/index.html`:
+     - Click the **Authorize** button.
+     - Enter the token as:
+       ```
+       Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+       ```
+   - When using **Postman** or other API tools:
+     - Add a header:
+       ```http
+       Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+       ```
+
+## 🛡️ Adding New Permissions in RBAC
+
+Permissions are managed via the `permissions` field in each role.
+
+To add a new permission:
+
+1. Update the `permissions` array in the database or via `/roles` endpoint.
+   Example:
+   ```json
+   {
+     "name": "editor",
+     "permissions": ["read", "update"]
+   }
+   ```
+
+2. Update `PermissionAuthMiddleware("your_permission")` in `main.go` or route definitions to require the new permission.
+
+3. Apply `RoleAuthMiddleware("role_name")` where appropriate to scope entire groups.
+
+4. Ensure your frontend or client uses the updated role IDs or names.
+
+**Important:** Always ensure new permissions are checked via middleware to avoid unauthorized access.
