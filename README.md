@@ -30,6 +30,8 @@ Boilerplate project using Go and Gin – a clean, simple, and lightweight starti
 - [🏁 Main Entry](#-main-entry)
 - [📦 Go Modules](#-go-modules)
 - [✅ Unit Testing](#-unit-testing)
+- [🔐 Authentication & Bearer Token Flow](#-authentication--bearer-token-flow)
+- [🛡️ Adding New Permissions in RBAC](#-adding-new-permissions-in-rbac)
 
 ---
 
@@ -278,7 +280,9 @@ Best practices:
 - Cover each handler and service
 - Mock DB where necessary
 
-## 🔐 Authentication and Bearer Token Usage
+---
+
+## 🔐 Authentication & Bearer Token Flow
 
 This project uses JWT (JSON Web Tokens) for authentication. A `Bearer` token is required to access all protected endpoints.
 
@@ -303,13 +307,15 @@ This project uses JWT (JSON Web Tokens) for authentication. A `Bearer` token is 
      - Click the **Authorize** button.
      - Enter the token as:
        ```
-       Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+       Bearer eyJhbGciOiJIUzI1NiIsInR...
        ```
    - When using **Postman** or other API tools:
      - Add a header:
        ```http
-       Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+       Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR...
        ```
+
+---
 
 ## 🛡️ Adding New Permissions in RBAC
 
